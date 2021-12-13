@@ -34,7 +34,7 @@
  * puo' cancellare il contenuto del terminale stesso prima di
  * ristampare il nuovo output. Per farlo si puo' utilizzare, ad
  * esempio, la funzione:
- * system("clear") ;
+ * system("clear");
  * che invoca semplicemente il comando clear.
  * 
  * Il puntatore puo' spostarsi solo all'interno della tavola, quindi
@@ -112,24 +112,35 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-using namespace std ;
+using namespace std;
+
+const int CANVAS_X  = 6;    //Canvas x size
+const int CANVAS_Y  = 6;    //Canvas y size
+
+const bool USE_SYSTEM_CLEAR = false;    //set to true if you want to use system's clear command to clear output
+                                        //ANSI code will be used otherwise (faster option)
+
+struct cursor_t {
+    int x;
+    int y;
+};
 
 /*
  * Configura il terminale in modo non canonico
  */
 void vai_in_modo_non_canonico() 
 {
-    struct termios nuovo ;
+    struct termios nuovo;
     if (tcgetattr(STDIN_FILENO, &nuovo) < 0) {
-	cout<<"Salvataggio modo terminale fallito"<<endl ;
-	exit(1) ;
+	cout<<"Salvataggio modo terminale fallito"<<endl;
+	exit(1);
     }
 
-    nuovo.c_lflag &= ~ICANON ;
+    nuovo.c_lflag &= ~ICANON;
 
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &nuovo) < 0) {
-	cout<<"Settaggio modo terminale fallito"<<endl ;
-	exit(1) ;
+	cout<<"Settaggio modo terminale fallito"<<endl;
+	exit(1);
     }
 
 }
@@ -137,34 +148,101 @@ void vai_in_modo_non_canonico()
 void salva_modo_terminale(termios &modo)
 {
     if (tcgetattr(STDIN_FILENO,  &modo) < 0) {
-	cout<<"Salvataggio modo terminale fallito" ;
-	exit(1) ;
+	cout<<"Salvataggio modo terminale fallito";
+	exit(1);
     }
 }
 
 void assegna_modo_terminale(termios &modo)
 {
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &modo) < 0) {
-	cout<<"Salvataggio modo terminale fallito" ;
-	exit(1) ;
+	cout<<"Salvataggio modo terminale fallito";
+	exit(1);
     }
 }
 
+
+void clear_output() {
+    if (USE_SYSTEM_CLEAR)
+        system("clear");
+    else
+        cout << "\x1b[2J";
+}
+
+void print_commands() {
+    cout << "j->sinistra, l->destra, i->alto, k->basso" << endl
+         << "q->esci" << endl;
+}
+
+/*
+ *  Display update routine. Clears display, prints legend, cursor and canvas.
+ *  @param canvas: a pointer to the matrix representing the canvas
+ *  @param cur: current position of the cursor 
+ */
+void update_display(const char canvas[][CANVAS_X], const cursor_t cur) {
+    clear_output();
+    print_commands();
+
+    for(int i=0; i<CANVAS_Y; i++) {
+        for(int j=0; j<CANVAS_X; j++) {
+            if(cur.x == j && cur.y == i)    //print cursor position
+                cout << "X";
+            else
+                cout << " ";
+        }
+        cout << endl;
+    }
+}
+
+
 int main()
 {
-    termios vecchio_modo_terminale ;
+    termios vecchio_modo_terminale;
     // si salva la modalita' corrente per ripristinarla al termine del
     // programma
-    salva_modo_terminale(vecchio_modo_terminale) ;
+    salva_modo_terminale(vecchio_modo_terminale);
 
-    vai_in_modo_non_canonico() ;
+    vai_in_modo_non_canonico();
     
     
     // qui va il vostro codice
+    char canvas[CANVAS_Y][CANVAS_X];
+    cursor_t cursor = {0, 0};
+
+    char cmd;
+    do {
+        //Print canvas
+        update_display(canvas, cursor);
+
+        //Get key
+        cin >> cmd;
+
+        //Decode key
+        switch(cmd) {
+            case 'i':   //up
+                if (cursor.y > 0)
+                    cursor.y--;
+                break;
+            case 'k':   //down
+                if(cursor.y < CANVAS_Y - 1)
+                    cursor.y++;
+                break;
+            case 'j':   //left
+                if(cursor.x > 0)
+                    cursor.x--;
+                break;
+            case 'l':   //right
+                if(cursor.x < CANVAS_X - 1)
+                    cursor.x++;
+                break;
+            default:    //other
+                break;
+        }
+    } while(cmd != 'q');
 
 
     // qui il terminale viene riportato nella modalita' precedente
-    assegna_modo_terminale(vecchio_modo_terminale) ;
+    assegna_modo_terminale(vecchio_modo_terminale);
 
-    return 0 ;
+    return 0;
 }
