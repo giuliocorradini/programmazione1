@@ -120,9 +120,16 @@ const int CANVAS_Y  = 6;    //Canvas y size
 const bool USE_SYSTEM_CLEAR = false;    //set to true if you want to use system's clear command to clear output
                                         //ANSI code will be used otherwise (faster option)
 
+enum cursor_mode_t {
+    DRAWING,
+    ERASING,
+    MOVING
+};
+
 struct cursor_t {
     int x;
     int y;
+    cursor_mode_t mode;
 };
 
 /*
@@ -171,6 +178,7 @@ void clear_output() {
 
 void print_commands() {
     cout << "j->sinistra, l->destra, i->alto, k->basso" << endl
+         << "u->disegna, o->cancella, n->solo sposta" << endl
          << "q->esci" << endl;
 }
 
@@ -185,13 +193,33 @@ void update_display(const char canvas[][CANVAS_X], const cursor_t cur) {
 
     for(int i=0; i<CANVAS_Y; i++) {
         for(int j=0; j<CANVAS_X; j++) {
-            if(cur.x == j && cur.y == i)    //print cursor position
-                cout << "X";
-            else
-                cout << " ";
+            if(cur.x == j && cur.y == i) {    //print cursor position
+                switch (cur.mode) {
+                case MOVING:
+                    cout << "X";
+                    break;
+                case DRAWING:
+                    cout << "+";
+                    break;
+                case ERASING:
+                    cout << "-";
+                    break;
+                }
+            } else if (canvas[i][j] == '*') {
+                cout << '*';
+            } else {
+                cout << ' ';
+            }
         }
         cout << endl;
     }
+}
+
+void update_canvas(char canvas[][CANVAS_X], const cursor_t cursor) {
+    if(cursor.mode == DRAWING)
+        canvas[cursor.y][cursor.x] = '*';
+    else if(cursor.mode == ERASING)
+        canvas[cursor.y][cursor.x] = '\x00';    //any byte should be ok
 }
 
 
@@ -206,8 +234,8 @@ int main()
     
     
     // qui va il vostro codice
-    char canvas[CANVAS_Y][CANVAS_X];
-    cursor_t cursor = {0, 0};
+    char canvas[CANVAS_Y][CANVAS_X] = {};   //init to zeroes
+    cursor_t cursor = {0, 0, MOVING};
 
     char cmd;
     do {
@@ -220,20 +248,39 @@ int main()
         //Decode key
         switch(cmd) {
             case 'i':   //up
-                if (cursor.y > 0)
+                if (cursor.y > 0) {
                     cursor.y--;
+                    update_canvas(canvas, cursor);
+                }
                 break;
             case 'k':   //down
-                if(cursor.y < CANVAS_Y - 1)
+                if(cursor.y < CANVAS_Y - 1) {
                     cursor.y++;
+                    update_canvas(canvas, cursor);
+                }
                 break;
             case 'j':   //left
-                if(cursor.x > 0)
+                if(cursor.x > 0) {
                     cursor.x--;
+                    update_canvas(canvas, cursor);
+                }
                 break;
             case 'l':   //right
-                if(cursor.x < CANVAS_X - 1)
+                if(cursor.x < CANVAS_X - 1) {
                     cursor.x++;
+                    update_canvas(canvas, cursor);
+                }
+                break;
+            case 'u':   //draw
+                cursor.mode = DRAWING;
+                update_canvas(canvas, cursor);
+                break;
+            case 'o':   //erase
+                cursor.mode = ERASING;
+                update_canvas(canvas, cursor);
+                break;
+            case 'n':   //move
+                cursor.mode = MOVING;
                 break;
             default:    //other
                 break;
