@@ -106,6 +106,7 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <stdio.h>
 #include <termios.h>
 #include <fcntl.h>
@@ -179,7 +180,26 @@ void clear_output() {
 void print_commands() {
     cout << "j->sinistra, l->destra, i->alto, k->basso" << endl
          << "u->disegna, o->cancella, n->solo sposta" << endl
-         << "q->esci" << endl;
+         << "q->esci, w->apri..., e->salva..." << endl;
+}
+
+bool load_from_file(char canvas[][CANVAS_X], const char *filename) {
+    ifstream f(filename, ios::binary);
+
+    if(f)
+        f.read((char *)canvas, CANVAS_X * CANVAS_Y);
+
+    return static_cast<bool>(f);
+}
+
+bool save_to_file(const char canvas[][CANVAS_X], const char *filename) {
+    ofstream f(filename, ios::binary);      //open in write mode (destroy file if present)
+
+    if(f) {
+        f.write((const char *)canvas, CANVAS_X * CANVAS_Y);
+    }
+
+    return static_cast<bool>(f);
 }
 
 /*
@@ -237,6 +257,8 @@ int main()
     char canvas[CANVAS_Y][CANVAS_X] = {};   //init to zeroes
     cursor_t cursor = {0, 0, MOVING};
 
+    char filename[32];
+
     char cmd;
     do {
         //Print canvas
@@ -281,6 +303,26 @@ int main()
                 break;
             case 'n':   //move
                 cursor.mode = MOVING;
+                break;
+            case 'w':   //load from file
+                cout << "Nome del file: ";
+                cin >> filename;
+
+                if(load_from_file(canvas, filename))
+                    cout << "Caricato!" << endl;
+                else
+                    cout << "Errore di caricamento" << endl;
+
+                break;
+            case 'e':
+                cout << "Nome del file: ";
+                cin >> filename;
+
+                if(save_to_file(canvas, filename))
+                    cout << "Salvato!" << endl;
+                else
+                    cout << "Non riesco a salvare" << endl;
+
                 break;
             default:    //other
                 break;
