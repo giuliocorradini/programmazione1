@@ -16,7 +16,7 @@ C++ riserva una parola per l'allocazione dinamica: `new`.
 
 Per allocare un vettore di dimensione scelta dall'utente a tempo di runtime posso scrivere:
 
-```
+```c++
 new int[a];
 ```
 
@@ -31,7 +31,7 @@ Sono variabili che hanno come valore un indirizzo di memoria. Un puntatore non �
 
 Il qualificatore const per i puntatori inibisce la modifica dell'area di memoria target.
 
-```
+```c++
 const int *a = <indirizzo>;
 ```
 
@@ -61,7 +61,7 @@ solo quando termino il programma. Questo problema è detto memory leak.
 
 Per deallocare un array posso usare la keyword delete:
 
-```
+```c++
 int *dynVect = new int[N];
 delete [] dynVect;
 ```
@@ -101,7 +101,7 @@ Per ritornare dimensione del vettore e vettore stesso allocati nella funzione po
 
 - struct come valore di ritorno con puntatore e dimensione
 
-## Riferimento a puntatore
+## Riferimento a puntatore
 
 *unsigned int* dal punto di vista logico. È un riferimento (indirizzo) a un puntatore (indirizzo).
 

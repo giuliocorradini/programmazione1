@@ -21,7 +21,7 @@ Il *char* ha dimensione di esattamente 1 byte.
 alla fine del file viene restituita una costante EOF.
 
 - `.get(c)` viene salvato nella reference (c) il prossimo carattere nello stream. Ma devo
-passare una reference a intero.
+passare una reference a un char-like. Restituisce il puntatore allo stream.
 
 - `.get(char *buffer, int n, char delimiter)` vengono letti al più di n byte entro il delimitatore
 specificato. Viene aggiunto un '\0' alla fine nel buffer. Il delimitatore non viene rimosso, quindi
@@ -63,9 +63,9 @@ f.write(
 La scrittura non formattata risulta meno efficiente della formattata, visto che quest'ultima viene
 bufferizzata.
 
-### dereferenziazione
+### address-of
 
-L'operatore `&` dereferenzia l'oggetto, ovvero ritorna il suo indirizzo in memoria.
+L'operatore `&` ritorna l'indirizzo in memoria dell'oggeto su cui è chiamato.
 
 ## Accesso casuale
 

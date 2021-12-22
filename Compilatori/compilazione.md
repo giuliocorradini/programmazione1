@@ -70,7 +70,7 @@ Il codice che ho scritto viene collegato al codice delle librerie importate.
 
 ## Ambiente di programmazione
 
-Insieme di linguaggi e strumenti in support alle varie fasi di sviluppo del codice.
+Insieme di linguaggi e strumenti a supporto delle varie fasi di sviluppo del codice.
 
 Un ambiente può essere: Linux, bash, un editor e il compilatore (traduttore e linker).
 
